@@ -1,11 +1,12 @@
 {
-  "name": "Joshua & Carleigh — Life Fitness",
+  "name": "Joshua & Carleigh Fitness",
   "short_name": "J&C Fitness",
   "description": "Shared workout tracker for Joshua and Carleigh at Life Fitness",
-  "start_url": "/",
+  "start_url": "/J-C-Health-app/",
+  "scope": "/J-C-Health-app/",
   "display": "standalone",
   "background_color": "#0a0a0a",
-  "theme_color": "#0a0a0a",
+  "theme_color": "#ff5c1a",
   "orientation": "portrait-primary",
   "icons": [
     {
