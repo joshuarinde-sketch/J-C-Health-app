@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="J & C Fitness">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Joshua & Carleigh — Life Fitness</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0a0a0a;
+    --dark: #111317;
+    --card: #181b20;
+    --border: #252830;
+    --orange: #ff5c1a;
+    --orange-dim: rgba(255,92,26,0.12);
+    --blue: #3d9cf5;
+    --blue-dim: rgba(61,156,245,0.12);
+    --green: #27c97e;
+    --green-dim: rgba(39,201,126,0.1);
+    --text: #e8e8e8;
+    --muted: #636776;
+    --light: #f0f0f0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--black);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* LOADING SCREEN */
+  #loadingScreen {
+    position: fixed; inset: 0;
+    background: var(--black);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 9999;
+    transition: opacity .4s;
+  }
+  #loadingScreen.hidden { opacity: 0; pointer-events: none; }
+  .load-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+  }
+  .load-logo .j { color: var(--orange); }
+  .load-logo .c { color: var(--blue); }
+  .load-sub { color: var(--muted); font-size: 13px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 40px; }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--orange);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* CONFIG SCREEN */
+  #configScreen {
+    display: none;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    flex-direction: column;
+  }
+  #configScreen.show { display: flex; }
+  .config-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    max-width: 480px;
+    width: 100%;
+  }
+  .config-card h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .config-card p { font-size: 14px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+  .config-input {
+    width: 100%;
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 10px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .config-input:focus { border-color: var(--orange); }
+  .config-input::placeholder { color: var(--muted); }
+  .config-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    background: var(--orange);
+    color: #fff;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity .2s;
+  }
+  .config-btn:hover { opacity: .85; }
+  .config-note {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 16px;
+    text-align: center;
+    line-height: 1.5;
+  }
+  .config-note a { color: var(--blue); }
+
+  /* HEADER */
+  .header {
+    background: var(--dark);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+  }
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo .j { color: var(--orange); }
+  .logo .c { color: var(--blue); }
+  .logo-sep { color: var(--muted); font-size: 14px; }
+  .sync-indicator {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+    transition: all .3s;
+  }
+  .sync-indicator.synced { background: var(--green-dim); color: var(--green); }
+  .sync-indicator.syncing { background: var(--orange-dim); color: var(--orange); }
+  .sync-indicator.offline { background: var(--border); color: var(--muted); }
+
+  /* DAY NAV */
+  .day-nav {
+    background: var(--dark);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .day-nav::-webkit-scrollbar { display: none; }
+  .day-nav-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    gap: 4px;
+    padding: 8px 0;
+  }
+  .day-btn {
+    flex-shrink: 0;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    letter-spacing: .5px;
+  }
+  .day-btn:hover { color: var(--text); border-color: #3a3f4a; }
+  .day-btn.active-j { background: var(--orange-dim); border-color: var(--orange); color: var(--orange); }
+  .day-btn.active-c { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+
+  /* PERSON TOGGLE */
+  .person-toggle {
+    max-width: 800px;
+    margin: 20px auto 0;
+    padding: 0 16px;
+    display: flex;
+    gap: 10px;
+  }
+  .person-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: transparent;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all .2s;
+    color: var(--muted);
+  }
+  .person-btn.j.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .person-btn.c.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+
+  /* MAIN */
+  .main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px 16px;
+  }
+
+  /* TAB BAR */
+  .tab-bar {
+    display: flex;
+    border-bottom: 2px solid var(--border);
+    margin-bottom: 20px;
+  }
+  .tab {
+    flex: 1;
+    padding: 12px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all .2s;
+    text-align: center;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active-j { color: var(--orange); border-color: var(--orange); }
+  .tab.active-c { color: var(--blue); border-color: var(--blue); }
+
+  /* DAY LABEL */
+  .day-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 2px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .day-label span { font-size: 16px; color: var(--muted); font-family: 'DM Sans', sans-serif; font-weight: 300; letter-spacing: 0; margin-left: 10px; }
+  .focus-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .focus-tag.j { background: var(--orange-dim); color: var(--orange); }
+  .focus-tag.c { background: var(--blue-dim); color: var(--blue); }
+
+  /* EXERCISE CARDS */
+  .exercise-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .ex-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    transition: border-color .2s, opacity .3s;
+  }
+  .ex-card.done-card { opacity: 0.55; }
+  .ex-card.j:hover { border-color: rgba(255,92,26,.3); }
+  .ex-card.c:hover { border-color: rgba(61,156,245,.3); }
+  .ex-name {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 10px;
+    color: var(--light);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .ex-machine {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--border);
+    padding: 2px 7px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .sets-info {
+    background: var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--text);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .field-wrap { display: flex; flex-direction: column; gap: 3px; }
+  .field-label {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+  }
+  .editable-input {
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 7px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    width: 100%;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .editable-input:focus { border-color: var(--orange); }
+  .editable-input.c:focus { border-color: var(--blue); }
+  .ex-notes { font-size: 11px; color: var(--muted); font-style: italic; line-height: 1.5; margin-bottom: 12px; }
+  .check-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 0 0;
+    border-top: 1px solid var(--border);
+  }
+  .check-box {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .2s;
+    flex-shrink: 0;
+  }
+  .check-box.done.j { background: var(--orange); border-color: var(--orange); }
+  .check-box.done.c { background: var(--blue); border-color: var(--blue); }
+  .check-box svg { display: none; }
+  .check-box.done svg { display: block; }
+  .check-label { font-size: 13px; color: var(--muted); }
+
+  /* REST DAY */
+  .rest-day {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .rest-day .rest-icon { font-size: 56px; margin-bottom: 14px; }
+  .rest-day h2 { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; margin-bottom: 6px; color: var(--text); }
+
+  /* FOOD LOG */
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+  .macros-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .macro-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .macro-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+  .macro-val.cal { color: var(--orange); }
+  .macro-val.pro { color: var(--blue); }
+  .macro-val.carb { color: #fbbf24; }
+  .macro-val.fat { color: var(--green); }
+  .macro-lbl { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+  .macro-goal { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  .meal-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+  .meal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .meal-title { font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+  .meal-cal { font-size: 12px; color: var(--muted); }
+  .col-labels {
+    display: grid;
+    grid-template-columns: 1fr 64px 64px 32px;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .col-labels span { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+  .food-item-row {
+    display: grid;
+    grid-template-columns: 1fr 64px 64px 32px;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .food-item-row input {
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    outline: none;
+    width: 100%;
+    transition: border-color .2s;
+  }
+  .food-item-row input:focus { border-color: var(--green); }
+  .del-btn {
+    width: 32px; height: 32px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all .2s;
+    line-height: 1;
+  }
+  .del-btn:hover { background: rgba(255,80,80,.15); border-color: #ff5050; color: #ff5050; }
+  .add-food-btn {
+    width: 100%;
+    padding: 9px;
+    border-radius: 8px;
+    border: 1px dashed var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all .2s;
+  }
+  .add-food-btn:hover { border-color: var(--green); color: var(--green); }
+
+  /* WATER */
+  .water-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+  .water-block h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px; }
+  .water-cups { display: flex; gap: 6px; flex-wrap: wrap; }
+  .cup {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all .2s;
+  }
+  .cup.filled { background: #1e3a5f; border-color: var(--blue); }
+  .water-count { font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+  /* NOTES */
+  .notes-block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 12px;
+  }
+  .notes-block h3 { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; }
+  .notes-block textarea {
+    width: 100%;
+    background: var(--black);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    resize: vertical;
+    min-height: 90px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .notes-block textarea:focus { border-color: var(--muted); }
+  .mood-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .mood-btn {
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    transition: all .2s;
+  }
+  .mood-btn.selected-j { background: var(--orange-dim); border-color: var(--orange); color: var(--orange); }
+  .mood-btn.selected-c { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 13px;
+    padding: 10px 20px;
+    border-radius: 30px;
+    opacity: 0;
+    transition: all .3s;
+    z-index: 999;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.green { border-color: var(--green); color: var(--green); }
+
+  /* PROGRESS BAR */
+  .progress-bar-wrap { margin-bottom: 20px; }
+  .progress-bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .progress-bar-track { height: 6px; background: var(--border); border-radius: 10px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 10px; transition: width .5s ease; }
+  .progress-bar-fill.j { background: var(--orange); }
+  .progress-bar-fill.c { background: var(--blue); }
+
+  @media(max-width: 480px) {
+    .macros-bar { grid-template-columns: repeat(2, 1fr); }
+    .exercise-grid { grid-template-columns: 1fr; }
+    .day-label { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loadingScreen">
+  <div class="load-logo"><span class="j">J</span> & <span class="c">C</span></div>
+  <div class="load-sub">Life Fitness</div>
+  <div class="spinner"></div>
+</div>
+
+<!-- FIREBASE CONFIG SCREEN -->
+<div id="configScreen">
+  <div class="config-card">
+    <h1>🔥 Connect Firebase</h1>
+    <p>Paste your Firebase project config below to enable real-time sync between Joshua and Carleigh's phones. You only need to do this once.</p>
+    <input class="config-input" id="cfg_apiKey" placeholder="apiKey" />
+    <input class="config-input" id="cfg_authDomain" placeholder="authDomain (e.g. yourapp.firebaseapp.com)" />
+    <input class="config-input" id="cfg_projectId" placeholder="projectId" />
+    <input class="config-input" id="cfg_appId" placeholder="appId" />
+    <button class="config-btn" onclick="saveFirebaseConfig()">Save & Connect</button>
+    <p class="config-note">
+      Don't have Firebase set up yet? <a href="#" onclick="showGuide()">View setup guide</a><br><br>
+      <strong>Your config is stored locally on this device only.</strong>
+    </p>
+  </div>
+</div>
+
+<!-- SETUP GUIDE MODAL -->
+<div id="guideModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:500;overflow-y:auto;padding:24px;">
+  <div style="max-width:560px;margin:0 auto;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:28px;">
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;margin-bottom:16px;">📋 Firebase Setup Guide</h2>
+    <div style="font-size:14px;line-height:1.8;color:var(--text);">
+      <p style="color:var(--muted);margin-bottom:16px;">Follow these steps — takes about 5 minutes. All free!</p>
+      <ol style="padding-left:20px;display:flex;flex-direction:column;gap:12px;">
+        <li>Go to <strong style="color:var(--orange);">console.firebase.google.com</strong> and sign in with your Google account.</li>
+        <li>Click <strong>"Add project"</strong> → name it <em>"jc-fitness"</em> → click through the prompts → Create project.</li>
+        <li>On the project dashboard, click the <strong>Web icon (&lt;/&gt;)</strong> to add a web app.</li>
+        <li>Name it anything (e.g. "jc-app") → click <strong>Register app</strong>.</li>
+        <li>You'll see a config block. Copy the values into this app:
+          <ul style="margin-top:8px;padding-left:16px;color:var(--muted);">
+            <li>apiKey</li>
+            <li>authDomain</li>
+            <li>projectId</li>
+            <li>appId</li>
+          </ul>
+        </li>
+        <li>Back in Firebase, go to <strong>Build → Firestore Database</strong> → Create database → choose <strong>Start in test mode</strong> → select a region → Done.</li>
+        <li>That's it! Paste your config values into this app and hit Save.</li>
+      </ol>
+      <div style="margin-top:20px;padding:14px;background:var(--orange-dim);border-radius:10px;border:1px solid rgba(255,92,26,.2);">
+        <strong style="color:var(--orange);">⚡ Both phones need the same config.</strong> The easiest way: set it up on one phone, then text the 4 values to the other person.
+      </div>
+    </div>
+    <button onclick="document.getElementById('guideModal').style.display='none'" style="margin-top:20px;width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;">Close Guide</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;">
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo"><span class="j">JOSHUA</span><span class="logo-sep">&</span><span class="c">CARLEIGH</span></div>
+      <div class="sync-indicator syncing" id="syncIndicator">⟳ Syncing</div>
+    </div>
+  </header>
+
+  <nav class="day-nav">
+    <div class="day-nav-inner" id="dayNav"></div>
+  </nav>
+
+  <div class="main">
+    <div class="person-toggle">
+      <button class="person-btn j active" id="btnJ" onclick="setPerson('j')">Joshua</button>
+      <button class="person-btn c" id="btnC" onclick="setPerson('c')">Carleigh</button>
+    </div>
+
+    <div style="margin-top:20px;">
+      <div class="tab-bar" id="tabBar"></div>
+      <div id="tabContent"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ==============================
+// DATA
+// ==============================
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const FOCUS = {
+  j: ['Chest + Triceps','Back + Biceps','Legs + Glutes','Shoulders + Arms','Full Body Power','Active Recovery','REST'],
+  c: ['Glutes + Legs','Upper Body Tone','Core + Cardio','Legs + Booty','Full Body Sculpt','Active Recovery','REST']
+};
+
+const workoutsJ = {
+  0:[
+    {name:'Flat Bench Press',machine:'Life Fitness Bench',sets:'4 × 8-10',notes:'Control the descent, 2 sec down. Arch slightly.'},
+    {name:'Incline Dumbbell Press',machine:'Incline Bench',sets:'3 × 10-12',notes:'Elbows at 45°, squeeze at top.'},
+    {name:'Cable Chest Fly',machine:'LF Cable',sets:'3 × 12-15',notes:'Keep slight elbow bend throughout.'},
+    {name:'Chest Press Machine',machine:'LF Chest Press',sets:'3 × 10-12',notes:'Great for isolation and drop sets.'},
+    {name:'Tricep Pushdown (Rope)',machine:'Cable Tower',sets:'3 × 12-15',notes:'Spread the rope at bottom, lock out.'},
+    {name:'Overhead Tricep Extension',machine:'Cable Tower',sets:'3 × 10-12',notes:'Keep elbows pointed forward.'},
+    {name:'Dips',machine:'Dip Station',sets:'3 × 8-12',notes:'Lean forward for chest emphasis.'},
+  ],
+  1:[
+    {name:'Lat Pulldown',machine:'LF Cable',sets:'4 × 10-12',notes:'Pull to upper chest, squeeze lats.'},
+    {name:'Seated Cable Row',machine:'LF Row Cable',sets:'4 × 10-12',notes:'Drive elbows back, keep chest tall.'},
+    {name:'Assisted Pull-Ups',machine:'LF Assist Machine',sets:'3 × 8-10',notes:'Use minimal assist — push yourself.'},
+    {name:'Single Arm DB Row',machine:'DB + Bench',sets:'3 × 10 ea',notes:'Brace core, row to hip.'},
+    {name:'Straight Arm Pulldown',machine:'Cable',sets:'3 × 12-15',notes:'Great lat isolation finisher.'},
+    {name:'Barbell Curl',machine:'Free Weights',sets:'3 × 10-12',notes:'No swinging — strict form.'},
+    {name:'Hammer Curl',machine:'Dumbbells',sets:'3 × 12 ea',notes:'Targets brachialis + forearms.'},
+  ],
+  2:[
+    {name:'Leg Press',machine:'LF Leg Press',sets:'4 × 10-12',notes:'Feet shoulder-width. Don\'t lock knees at top.'},
+    {name:'Barbell Back Squat',machine:'Smith/Squat Rack',sets:'4 × 8-10',notes:'Break parallel, brace tight.'},
+    {name:'Romanian Deadlift',machine:'Barbell',sets:'3 × 10-12',notes:'Hinge at hips, feel the hamstring stretch.'},
+    {name:'Leg Curl (Seated)',machine:'LF Leg Curl',sets:'3 × 12-15',notes:'Full extension → full contraction.'},
+    {name:'Leg Extension',machine:'LF Leg Ext',sets:'3 × 12-15',notes:'Hold at top for 1 second.'},
+    {name:'Hip Thrust (Smith)',machine:'Smith Machine',sets:'3 × 12-15',notes:'Drive through heels, squeeze glutes.'},
+    {name:'Standing Calf Raise',machine:'LF Calf Raise',sets:'4 × 15-20',notes:'Full range of motion, slow tempo.'},
+  ],
+  3:[
+    {name:'Seated Shoulder Press',machine:'LF Shoulder Press',sets:'4 × 10-12',notes:'Don\'t flare elbows too wide.'},
+    {name:'Lateral Raise',machine:'Dumbbells',sets:'3 × 12-15',notes:'Lead with elbows, slight lean forward.'},
+    {name:'Front Raise',machine:'Cable/DB',sets:'3 × 12',notes:'Alternate arms for more control.'},
+    {name:'Face Pulls',machine:'Cable Tower',sets:'3 × 15',notes:'External rotate at end. Great for shoulder health.'},
+    {name:'Preacher Curl Machine',machine:'LF Preacher',sets:'3 × 10-12',notes:'Full stretch at bottom.'},
+    {name:'Tricep Dip Machine',machine:'LF Dip Machine',sets:'3 × 10-12',notes:'Controlled movement throughout.'},
+    {name:'Cable Lateral Raise',machine:'Cable',sets:'2 × 15 ea',notes:'Finisher — superset if able.'},
+  ],
+  4:[
+    {name:'Deadlift',machine:'Barbell',sets:'4 × 6-8',notes:'Biggest compound lift. Drive floor away.'},
+    {name:'Incline Bench Press',machine:'Barbell',sets:'3 × 8-10',notes:'Upper chest builder.'},
+    {name:'Pull-Ups',machine:'Pull-Up Bar',sets:'3 × 6-10',notes:'Add weight if comfortable.'},
+    {name:'Goblet Squat',machine:'Kettlebell/DB',sets:'3 × 12',notes:'Upright torso, go deep.'},
+    {name:'DB Shoulder Press',machine:'Dumbbells',sets:'3 × 10-12',notes:'Seated or standing.'},
+    {name:'Plank',machine:'Floor',sets:'3 × 45-60s',notes:'Squeeze every muscle.'},
+    {name:"Farmer's Carry",machine:'DB/Handles',sets:'3 × 40m',notes:'Heavy, controlled walk.'},
+  ],
+  5:[
+    {name:'Treadmill Incline Walk',machine:'LF Treadmill',sets:'1 × 25 min',notes:'3.0-3.5 mph at 8-12% incline.'},
+    {name:'Foam Rolling',machine:'Foam Roller',sets:'1 × 10-15 min',notes:'Target quads, IT band, lats, thoracic.'},
+    {name:'Resistance Band Work',machine:'Bands',sets:'2 × 15 ea',notes:'Face pulls, pull-aparts, hip circles.'},
+    {name:'Stretching Circuit',machine:'Floor/Mat',sets:'1 × 15 min',notes:'Hold each stretch 30+ seconds.'},
+  ],
+  6: null
+};
+
+const workoutsC = {
+  0:[
+    {name:'Hip Thrust (Smith Machine)',machine:'Smith Machine',sets:'4 × 12-15',notes:'Shoulder blades on bench. Drive hard!'},
+    {name:'Sumo Squat',machine:'Barbell/Smith',sets:'4 × 10-12',notes:'Wide stance, toes out. Feel inner thighs.'},
+    {name:'Cable Kickback',machine:'LF Cable',sets:'3 × 15 ea',notes:'Squeeze glute hard at top, slow descent.'},
+    {name:'Seated Leg Curl',machine:'LF Leg Curl',sets:'3 × 12-15',notes:'Great for hamstring development.'},
+    {name:'Abductor Machine',machine:'LF Abductor',sets:'3 × 15-20',notes:'Targets outer glute. Squeeze at end.'},
+    {name:'Walking Lunges',machine:'Dumbbells',sets:'3 × 12 ea',notes:'Long stride, upright torso.'},
+    {name:'Calf Raise',machine:'LF Calf Raise',sets:'3 × 20',notes:'Full range. Pause at top.'},
+  ],
+  1:[
+    {name:'Assisted Pull-Up',machine:'LF Assist',sets:'3 × 8-10',notes:'Focus on pulling with lats, not arms.'},
+    {name:'Cable Row (Close Grip)',machine:'LF Cable Row',sets:'3 × 12',notes:'Chest out, elbows drive back.'},
+    {name:'Dumbbell Bench Press',machine:'Flat Bench',sets:'3 × 12',notes:'Light-moderate. Shape, not bulk.'},
+    {name:'Lat Pulldown',machine:'LF Cable',sets:'3 × 12-15',notes:'Wide grip, pull to collarbone.'},
+    {name:'DB Lateral Raise',machine:'Dumbbells',sets:'3 × 15',notes:'Lead with elbow, don\'t shrug.'},
+    {name:'Tricep Pushdown',machine:'Cable Tower',sets:'3 × 15',notes:'Tighten at bottom, full extension.'},
+    {name:'Bicep Curl (Cable)',machine:'Cable Tower',sets:'3 × 12-15',notes:'Constant tension throughout.'},
+  ],
+  2:[
+    {name:'Stairmaster / Elliptical',machine:'LF Cardio',sets:'1 × 20 min',notes:'Moderate intensity. Stay in fat-burn zone.'},
+    {name:'Cable Crunch',machine:'Cable Tower',sets:'3 × 15-20',notes:'Round over, forehead to knees.'},
+    {name:'Hanging Knee Raise',machine:'Pull-Up Bar',sets:'3 × 12-15',notes:'Control the descent, no swinging.'},
+    {name:'Pallof Press',machine:'Cable Tower',sets:'3 × 12 ea',notes:'Anti-rotation core training.'},
+    {name:'Plank Hold',machine:'Floor/Mat',sets:'3 × 40s',notes:'Glutes and abs both tight.'},
+    {name:'Russian Twist',machine:'Floor/DB',sets:'3 × 20 total',notes:'Add a light DB for more challenge.'},
+    {name:'Incline Treadmill Walk',machine:'LF Treadmill',sets:'1 × 15 min',notes:'Cool-down cardio. 10% incline.'},
+  ],
+  3:[
+    {name:'Romanian Deadlift',machine:'Barbell/DB',sets:'4 × 10-12',notes:'Feel hamstrings lengthen. Hinge deeply.'},
+    {name:'Leg Press (High Foot)',machine:'LF Leg Press',sets:'4 × 12',notes:'High foot placement = more glute activation.'},
+    {name:'Glute Kickback Machine',machine:'LF Glute Machine',sets:'3 × 15 ea',notes:'Slow and controlled each rep.'},
+    {name:'Adductor Machine',machine:'LF Adductor',sets:'3 × 15-20',notes:'Inner thigh burn. Controlled motion.'},
+    {name:'Step-Up w/ DB',machine:'DB + Bench',sets:'3 × 12 ea',notes:'Push through heel of elevated foot.'},
+    {name:'Leg Extension',machine:'LF Leg Ext',sets:'3 × 15',notes:'Quad finisher. Hold 1 sec at top.'},
+    {name:'Seated Hip Abduction',machine:'LF Abductor',sets:'2 × 25',notes:'Burnout set to finish glutes.'},
+  ],
+  4:[
+    {name:'Dumbbell Squat',machine:'Dumbbells',sets:'3 × 12-15',notes:'Hold DBs at sides or goblet.'},
+    {name:'Bent-Over DB Row',machine:'Dumbbells',sets:'3 × 12',notes:'Flat back, pull to hip crease.'},
+    {name:'Incline DB Press',machine:'Incline Bench',sets:'3 × 12',notes:'Upper body tone focus.'},
+    {name:'Hip Thrust',machine:'Smith/Barbell',sets:'3 × 15',notes:'Max glute squeeze each rep.'},
+    {name:'Cable Face Pull',machine:'Cable Tower',sets:'3 × 15',notes:'Shoulder health + posture.'},
+    {name:'Plank Variations',machine:'Floor',sets:'3 × 30s ea',notes:'Side plank, regular, shoulder tap.'},
+    {name:'Treadmill HIIT',machine:'LF Treadmill',sets:'1 × 15 min',notes:'30s sprint / 60s walk × 8 rounds.'},
+  ],
+  5:[
+    {name:'Elliptical',machine:'LF Elliptical',sets:'1 × 20 min',notes:'Low resistance, steady pace.'},
+    {name:'Foam Rolling',machine:'Foam Roller',sets:'1 × 10 min',notes:'Glutes, IT band, quads, calves.'},
+    {name:'Yoga / Stretching',machine:'Mat',sets:'1 × 15 min',notes:'Hip flexors, hamstrings, chest opener.'},
+    {name:'Resistance Band Glute Work',machine:'Bands',sets:'2 × 20 ea',notes:'Clamshells, lateral walks, kickbacks.'},
+  ],
+  6: null
+};
+
+// ==============================
+// STATE
+// ==============================
+let db = null;
+let currentPerson = 'j';
+let currentDay = new Date().getDay();
+if(currentDay === 0) currentDay = 6; else currentDay--;
+let currentTab = 'workout';
+let appData = {};
+let unsub = null;
+
+// ==============================
+// FIREBASE
+// ==============================
+window.showGuide = () => document.getElementById('guideModal').style.display = 'block';
+
+window.saveFirebaseConfig = () => {
+  const cfg = {
+    apiKey: document.getElementById('cfg_apiKey').value.trim(),
+    authDomain: document.getElementById('cfg_authDomain').value.trim(),
+    projectId: document.getElementById('cfg_projectId').value.trim(),
+    appId: document.getElementById('cfg_appId').value.trim(),
+  };
+  if(!cfg.apiKey || !cfg.projectId) { showToast('Please fill all fields',''); return; }
+  localStorage.setItem('fb_config', JSON.stringify(cfg));
+  initFirebase(cfg);
+};
+
+function initFirebase(cfg) {
+  try {
+    const app = initializeApp(cfg);
+    db = getFirestore(app);
+    startListening();
+    document.getElementById('configScreen').classList.remove('show');
+    document.getElementById('app').style.display = 'block';
+    setSyncStatus('syncing');
+  } catch(e) {
+    showToast('Firebase error: ' + e.message, '');
+  }
+}
+
+function startListening() {
+  if(unsub) unsub();
+  const ref = doc(db, 'shared', 'workoutData');
+  unsub = onSnapshot(ref, (snap) => {
+    if(snap.exists()) {
+      appData = snap.data();
+    } else {
+      appData = {};
+    }
+    setSyncStatus('synced');
+    render();
+  }, (err) => {
+    setSyncStatus('offline');
+    showToast('⚠️ Sync error — check connection', '');
+  });
+}
+
+async function saveToFirebase() {
+  if(!db) return;
+  setSyncStatus('syncing');
+  try {
+    await setDoc(doc(db, 'shared', 'workoutData'), appData);
+    setSyncStatus('synced');
+    showToast('✓ Saved & synced', 'green');
+  } catch(e) {
+    setSyncStatus('offline');
+    showToast('Save failed — check connection', '');
+  }
+}
+
+function setSyncStatus(s) {
+  const el = document.getElementById('syncIndicator');
+  el.className = 'sync-indicator ' + s;
+  el.textContent = s === 'synced' ? '✓ Synced' : s === 'syncing' ? '⟳ Syncing' : '✗ Offline';
+}
+
+// ==============================
+// DATA HELPERS
+// ==============================
+function dkey(p, d) { return `${p}_day${d}`; }
+
+function getData(p, d) {
+  const k = dkey(p, d);
+  if(!appData[k]) appData[k] = { exercises:{}, food:{Breakfast:[],Lunch:[],Dinner:[],Snacks:[]}, water:0, notes:'', goals:'', mood:'' };
+  return appData[k];
+}
+
+function save() { saveToFirebase(); }
+
+// ==============================
+// UI HELPERS
+// ==============================
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type === 'green' ? ' green' : '');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => t.className = 'toast', 2000);
+}
+
+// ==============================
+// NAVIGATION
+// ==============================
+window.setPerson = (p) => {
+  currentPerson = p;
+  document.getElementById('btnJ').classList.toggle('active', p==='j');
+  document.getElementById('btnC').classList.toggle('active', p==='c');
+  renderDayNav(); renderTabBar(); render();
+};
+
+window.setDay = (d) => {
+  currentDay = d;
+  renderDayNav(); render();
+};
+
+window.setTab = (t) => {
+  currentTab = t;
+  renderTabBar(); render();
+};
+
+function renderDayNav() {
+  document.getElementById('dayNav').innerHTML = DAYS.map((d,i) => {
+    const cls = i===currentDay ? (currentPerson==='j'?'active-j':'active-c') : '';
+    return `<button class="day-btn ${cls}" onclick="setDay(${i})">${d.slice(0,3).toUpperCase()}</button>`;
+  }).join('');
+}
+
+function renderTabBar() {
+  const tabs = [{id:'workout',icon:'💪',label:'Workout'},{id:'food',icon:'🥗',label:'Nutrition'},{id:'notes',icon:'📝',label:'Notes'}];
+  document.getElementById('tabBar').innerHTML = tabs.map(t => {
+    const active = t.id===currentTab ? (currentPerson==='j'?'active-j':'active-c') : '';
+    return `<div class="tab ${active}" onclick="setTab('${t.id}')">${t.icon} ${t.label}</div>`;
+  }).join('');
+}
+
+// ==============================
+// RENDER
+// ==============================
+function render() {
+  const el = document.getElementById('tabContent');
+  if(currentTab==='workout') renderWorkout(el);
+  else if(currentTab==='food') renderFood(el);
+  else renderNotes(el);
+}
+
+function renderWorkout(el) {
+  const p = currentPerson, d = currentDay;
+  const data = getData(p, d);
+  const workouts = p==='j' ? workoutsJ : workoutsC;
+  const workout = workouts[d];
+  const name = p==='j'?'Joshua':'Carleigh';
+
+  if(!workout) {
+    el.innerHTML = `<div class="rest-day"><div class="rest-icon">🛌</div><h2>REST DAY</h2><p style="color:var(--muted)">Recovery is where growth happens. Rest up, ${name}!</p></div>`;
+    return;
+  }
+
+  const done = data.exercises || {};
+  const completedCount = Object.values(done).filter(v=>v&&v.done).length;
+  const pct = Math.round((completedCount/workout.length)*100);
+
+  let html = `
+    <div class="day-label">${DAYS[d]}<span>${name}'s Training</span></div>
+    <div class="focus-tag ${p}">🏋️ ${FOCUS[p][d]}</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-label"><span>${completedCount}/${workout.length} exercises</span><span>${pct}%</span></div>
+      <div class="progress-bar-track"><div class="progress-bar-fill ${p}" style="width:${pct}%"></div></div>
+    </div>
+    <div class="exercise-grid">
+  `;
+
+  workout.forEach((ex, i) => {
+    const exData = done[i] || {};
+    const isDone = !!exData.done;
+    html += `
+      <div class="ex-card ${p} ${isDone?'done-card':''}">
+        <div class="ex-name"><span>${ex.name}</span><span class="ex-machine">${ex.machine}</span></div>
+        <div class="sets-info">📋 ${ex.sets}</div>
+        <div class="field-row">
+          <div class="field-wrap">
+            <span class="field-label">Weight Used</span>
+            <input class="editable-input ${p}" type="text" placeholder="lbs / kg" value="${exData.weight||''}"
+              onchange="updateEx(${i},'weight',this.value)">
+          </div>
+          <div class="field-wrap">
+            <span class="field-label">Reps / Notes</span>
+            <input class="editable-input ${p}" type="text" placeholder="e.g. 10,10,8" value="${exData.reps||''}"
+              onchange="updateEx(${i},'reps',this.value)">
+          </div>
+        </div>
+        <div class="ex-notes">${ex.notes}</div>
+        <div class="check-row" onclick="toggleEx(${i})">
+          <div class="check-box ${isDone?'done '+p:''}">
+            <svg width="12" height="12" fill="none" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <span class="check-label">${isDone?'Completed ✓':'Mark complete'}</span>
+        </div>
+      </div>
+    `;
+  });
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+window.toggleEx = (i) => {
+  const data = getData(currentPerson, currentDay);
+  if(!data.exercises[i]) data.exercises[i] = {};
+  data.exercises[i].done = !data.exercises[i].done;
+  save(); render();
+};
+
+window.updateEx = (i, field, val) => {
+  const data = getData(currentPerson, currentDay);
+  if(!data.exercises[i]) data.exercises[i] = {};
+  data.exercises[i][field] = val;
+  save();
+};
+
+function renderFood(el) {
+  const p = currentPerson, d = currentDay;
+  const data = getData(p, d);
+  const name = p==='j'?'Joshua':'Carleigh';
+  const food = data.food || {Breakfast:[],Lunch:[],Dinner:[],Snacks:[]};
+  const goalCal = p==='j'?2800:1900, goalPro = p==='j'?200:130;
+
+  let totalCal=0,totalPro=0,totalCarb=0,totalFat=0;
+  Object.values(food).flat().forEach(it => {
+    totalCal += parseFloat(it.cal)||0;
+    totalPro += parseFloat(it.pro)||0;
+    totalCarb += parseFloat(it.carb)||0;
+    totalFat += parseFloat(it.fat)||0;
+  });
+
+  let html = `
+    <div class="section-title">📊 ${name} — ${DAYS[d]} Nutrition</div>
+    <div class="macros-bar">
+      <div class="macro-card"><div class="macro-val cal">${Math.round(totalCal)}</div><div class="macro-lbl">Calories</div><div class="macro-goal">Goal: ${goalCal}</div></div>
+      <div class="macro-card"><div class="macro-val pro">${Math.round(totalPro)}g</div><div class="macro-lbl">Protein</div><div class="macro-goal">Goal: ${goalPro}g</div></div>
+      <div class="macro-card"><div class="macro-val carb">${Math.round(totalCarb)}g</div><div class="macro-lbl">Carbs</div></div>
+      <div class="macro-card"><div class="macro-val fat">${Math.round(totalFat)}g</div><div class="macro-lbl">Fat</div></div>
+    </div>
+  `;
+
+  ['Breakfast','Lunch','Dinner','Snacks'].forEach(meal => {
+    const items = food[meal] || [];
+    const mCal = items.reduce((s,it)=>s+(parseFloat(it.cal)||0),0);
+    html += `
+      <div class="meal-block">
+        <div class="meal-header">
+          <div class="meal-title">${meal}</div>
+          <div class="meal-cal">${Math.round(mCal)} kcal</div>
+        </div>
+        <div class="col-labels"><span>Food Item</span><span>Cal</span><span>Protein g</span><span></span></div>
+    `;
+    items.forEach((item,idx) => {
+      html += `
+        <div class="food-item-row">
+          <input type="text" placeholder="e.g. Chicken" value="${item.name||''}" onchange="updateFood('${meal}',${idx},'name',this.value)">
+          <input type="number" placeholder="cal" value="${item.cal||''}" onchange="updateFood('${meal}',${idx},'cal',this.value)">
+          <input type="number" placeholder="g" value="${item.pro||''}" onchange="updateFood('${meal}',${idx},'pro',this.value)">
+          <button class="del-btn" onclick="removeFood('${meal}',${idx})">×</button>
+        </div>
+      `;
+    });
+    html += `
+        <button class="add-food-btn" onclick="addFood('${meal}')">+ Add to ${meal}</button>
+      </div>
+    `;
+  });
+
+  const waterCount = data.water || 0;
+  html += `
+    <div class="water-block">
+      <h3>💧 Water Intake</h3>
+      <div class="water-cups">
+        ${Array(8).fill(0).map((_,i)=>`<div class="cup ${i<waterCount?'filled':''}" onclick="toggleWater(${i})">💧</div>`).join('')}
+      </div>
+      <div class="water-count">${waterCount}/8 cups today</div>
+    </div>
+  `;
+
+  el.innerHTML = html;
+}
+
+window.addFood = (meal) => {
+  const data = getData(currentPerson, currentDay);
+  if(!data.food[meal]) data.food[meal] = [];
+  data.food[meal].push({name:'',cal:'',pro:''});
+  save(); render();
+};
+
+window.removeFood = (meal, idx) => {
+  const data = getData(currentPerson, currentDay);
+  data.food[meal].splice(idx, 1);
+  save(); render();
+};
+
+window.updateFood = (meal, idx, field, val) => {
+  const data = getData(currentPerson, currentDay);
+  if(data.food[meal] && data.food[meal][idx]) {
+    data.food[meal][idx][field] = val;
+    save();
+  }
+};
+
+window.toggleWater = (idx) => {
+  const data = getData(currentPerson, currentDay);
+  data.water = (idx + 1 === data.water) ? idx : idx + 1;
+  save(); render();
+};
+
+function renderNotes(el) {
+  const p = currentPerson, d = currentDay;
+  const data = getData(p, d);
+  const name = p==='j'?'Joshua':'Carleigh';
+  const moods = ['😴 Tired','😐 Okay','😊 Good','💪 Great','🔥 On Fire'];
+
+  el.innerHTML = `
+    <div class="section-title">📝 ${name} — ${DAYS[d]} Notes</div>
+    <div class="notes-block">
+      <h3>Workout Feelings / PRs</h3>
+      <textarea placeholder="How did the workout go? Any personal records?" oninput="updateNote('notes',this.value)">${data.notes||''}</textarea>
+    </div>
+    <div class="notes-block">
+      <h3>Goals for Next Session</h3>
+      <textarea placeholder="What to improve next time?" oninput="updateNote('goals',this.value)">${data.goals||''}</textarea>
+    </div>
+    <div class="notes-block">
+      <h3>Energy / Mood Today</h3>
+      <div class="mood-row">
+        ${moods.map(m=>`<button class="mood-btn ${data.mood===m?'selected-'+p:''}" onclick="setMood('${m}')">${m}</button>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+window.updateNote = (field, val) => {
+  const data = getData(currentPerson, currentDay);
+  data[field] = val;
+  save();
+};
+
+window.setMood = (m) => {
+  const data = getData(currentPerson, currentDay);
+  data.mood = data.mood === m ? '' : m;
+  save(); render();
+};
+
+// ==============================
+// BOOT
+// ==============================
+function boot() {
+  const saved = localStorage.getItem('fb_config');
+  if(saved) {
+    try {
+      const cfg = JSON.parse(saved);
+      initFirebase(cfg);
+      document.getElementById('app').style.display = 'block';
+    } catch(e) {
+      showConfig();
+    }
+  } else {
+    showConfig();
+  }
+  setTimeout(() => {
+    document.getElementById('loadingScreen').classList.add('hidden');
+    setTimeout(() => document.getElementById('loadingScreen').style.display='none', 400);
+  }, 1200);
+
+  renderDayNav();
+  renderTabBar();
+}
+
+function showConfig() {
+  document.getElementById('configScreen').classList.add('show');
+}
+
+boot();
+</script>
+
+<!-- SERVICE WORKER REGISTRATION -->
+<script>
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
